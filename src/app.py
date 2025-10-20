@@ -14,6 +14,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit_authenticator as stauth
 from demo_data import (
     VESSELS, TRIPS_DF,
     calculate_trip_limit_status,
@@ -32,6 +33,49 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ============================================================================
+# AUTHENTICATION
+# ============================================================================
+# Demo credentials for interview committee
+# In production, this would use database with proper password hashing
+credentials = {
+    'usernames': {
+        'ipa_manager': {
+            'name': 'IPA Manager',
+            'password': stauth.Hasher(['demo2026']).generate()[0]
+        },
+        'demo': {
+            'name': 'Demo User',
+            'password': stauth.Hasher(['demo123']).generate()[0]
+        },
+        'fishermen_first': {
+            'name': 'Fishermen First',
+            'password': stauth.Hasher(['ff2026']).generate()[0]
+        }
+    }
+}
+
+authenticator = stauth.Authenticate(
+    credentials,
+    'tem_ipa_dashboard',
+    'tem_ipa_auth_key',
+    cookie_expiry_days=1
+)
+
+name, authentication_status, username = authenticator.login('Login to TEM IPA Manager Dashboard', 'main')
+
+# Check authentication
+if authentication_status == False:
+    st.error('Username/password is incorrect')
+    st.info('**Demo Accounts:**\n\n- Username: `demo` | Password: `demo123`\n- Username: `ipa_manager` | Password: `demo2026`')
+    st.stop()
+elif authentication_status == None:
+    st.warning('Please enter your username and password')
+    st.info('**Demo Accounts:**\n\n- Username: `demo` | Password: `demo123`\n- Username: `ipa_manager` | Password: `demo2026`')
+    st.stop()
+
+# Add logout button to sidebar (will be placed before navigation)
+
 # Demo banner
 st.markdown("""
 <div style="background-color: #fff4e6; padding: 15px; border-radius: 5px; border-left: 5px solid #ff9800; margin-bottom: 20px;">
@@ -47,6 +91,11 @@ st.markdown("**2026 A Season - Vessel Trip Limit Support**")
 
 # Sidebar navigation
 with st.sidebar:
+    # User info and logout
+    st.markdown(f"### Welcome, {name}!")
+    authenticator.logout('Logout', 'sidebar')
+
+    st.markdown("---")
     st.header("📍 Navigation")
     page = st.radio(
         "Select Page",
