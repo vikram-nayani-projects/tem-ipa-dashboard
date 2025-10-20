@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /b)",
+      "Bash(find . -type f ( -name \"*.pdf\" -o -name \"*.doc\" -o -name \"*.docx\" -o -name \"*.txt\" ))",
+      "Bash(py --version)",
+      "Bash(where python)",
+      "Bash(C:UsersvikraAppDataLocalMicrosoftWindowsAppspython.exe --version)",
+      "Bash(conda --version)",
+      "Bash(where pip3)",
+      "Bash(where pip)",
+      "Bash(git --version)",
+      "Bash(git init)",
+      "Bash(git add .)",
+      "Bash(git commit -m \"Initial commit - TEM IPA Manager Dashboard demo\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
