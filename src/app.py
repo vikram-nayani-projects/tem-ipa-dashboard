@@ -89,11 +89,6 @@ if not st.session_state.authenticated:
                 else:
                     st.error("Invalid username or password")
 
-        st.info("**Demo Accounts:**\n\n"
-                "• Username: `demo` | Password: `demo123`\n\n"
-                "• Username: `ipa_manager` | Password: `demo2026`\n\n"
-                "• Username: `fishermen_first` | Password: `ff2026`")
-
     st.stop()
 
 # Demo banner
