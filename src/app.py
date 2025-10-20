@@ -14,7 +14,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import streamlit_authenticator as stauth
 from demo_data import (
     VESSELS, TRIPS_DF,
     calculate_trip_limit_status,
@@ -38,43 +37,64 @@ st.set_page_config(
 # ============================================================================
 # Demo credentials for interview committee
 # In production, this would use database with proper password hashing
-credentials = {
-    'usernames': {
-        'ipa_manager': {
-            'name': 'IPA Manager',
-            'password': stauth.Hasher(['demo2026']).generate()[0]
-        },
-        'demo': {
-            'name': 'Demo User',
-            'password': stauth.Hasher(['demo123']).generate()[0]
-        },
-        'fishermen_first': {
-            'name': 'Fishermen First',
-            'password': stauth.Hasher(['ff2026']).generate()[0]
-        }
-    }
+
+# Initialize session state
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+    st.session_state.user_name = None
+    st.session_state.username = None
+
+# Demo user credentials
+DEMO_USERS = {
+    'demo': {'password': 'demo123', 'name': 'Demo User'},
+    'ipa_manager': {'password': 'demo2026', 'name': 'IPA Manager'},
+    'fishermen_first': {'password': 'ff2026', 'name': 'Fishermen First'}
 }
 
-authenticator = stauth.Authenticate(
-    credentials,
-    'tem_ipa_dashboard',
-    'tem_ipa_auth_key',
-    cookie_expiry_days=1
-)
+# Login function
+def login(username, password):
+    if username in DEMO_USERS and DEMO_USERS[username]['password'] == password:
+        st.session_state.authenticated = True
+        st.session_state.user_name = DEMO_USERS[username]['name']
+        st.session_state.username = username
+        return True
+    return False
 
-name, authentication_status, username = authenticator.login('Login to TEM IPA Manager Dashboard', 'main')
+# Logout function
+def logout():
+    st.session_state.authenticated = False
+    st.session_state.user_name = None
+    st.session_state.username = None
 
-# Check authentication
-if authentication_status == False:
-    st.error('Username/password is incorrect')
-    st.info('**Demo Accounts:**\n\n- Username: `demo` | Password: `demo123`\n- Username: `ipa_manager` | Password: `demo2026`')
+# Show login page if not authenticated
+if not st.session_state.authenticated:
+    st.title("🐟 TEM IPA Manager Dashboard")
+    st.markdown("**2026 A Season - Vessel Trip Limit Support**")
+    st.markdown("---")
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col2:
+        st.subheader("🔐 Login")
+
+        with st.form("login_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            submit = st.form_submit_button("Login", type="primary", use_container_width=True)
+
+            if submit:
+                if login(username, password):
+                    st.success("Login successful!")
+                    st.rerun()
+                else:
+                    st.error("Invalid username or password")
+
+        st.info("**Demo Accounts:**\n\n"
+                "• Username: `demo` | Password: `demo123`\n\n"
+                "• Username: `ipa_manager` | Password: `demo2026`\n\n"
+                "• Username: `fishermen_first` | Password: `ff2026`")
+
     st.stop()
-elif authentication_status == None:
-    st.warning('Please enter your username and password')
-    st.info('**Demo Accounts:**\n\n- Username: `demo` | Password: `demo123`\n- Username: `ipa_manager` | Password: `demo2026`')
-    st.stop()
-
-# Add logout button to sidebar (will be placed before navigation)
 
 # Demo banner
 st.markdown("""
@@ -92,8 +112,10 @@ st.markdown("**2026 A Season - Vessel Trip Limit Support**")
 # Sidebar navigation
 with st.sidebar:
     # User info and logout
-    st.markdown(f"### Welcome, {name}!")
-    authenticator.logout('Logout', 'sidebar')
+    st.markdown(f"### Welcome, {st.session_state.user_name}!")
+    if st.button("🚪 Logout", use_container_width=True):
+        logout()
+        st.rerun()
 
     st.markdown("---")
     st.header("📍 Navigation")
