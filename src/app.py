@@ -360,7 +360,8 @@ elif page == "Vessel Details":
             mode='lines+markers',
             name='Pollock Catch',
             line=dict(color='#1f77b4', width=3),
-            marker=dict(size=10)
+            marker=dict(size=10),
+            hovertemplate='<b>%{x|%b %d, %Y}</b><br>Pollock: %{y:,} lbs<extra></extra>'
         ))
 
         # Add 4-trip average limit line (without annotation)
@@ -387,7 +388,8 @@ elif page == "Vessel Details":
             mode='lines',
             name='4-Trip Limit (300k)',
             line=dict(color='orange', width=2, dash='dash'),
-            showlegend=True
+            showlegend=True,
+            hoverinfo='skip'
         ))
 
         fig.add_trace(go.Scatter(
@@ -395,18 +397,22 @@ elif page == "Vessel Details":
             mode='lines',
             name='Egregious (335k)',
             line=dict(color='red', width=2, dash='dash'),
-            showlegend=True
+            showlegend=True,
+            hoverinfo='skip'
         ))
 
         # Highlight current 4-trip window
         if status_info['status'] != 'INSUFFICIENT_DATA':
             last_4_trips = pd.DataFrame(status_info['trips'])
+            # Add custom hover text with 4-trip average
+            avg_text = f"4-Trip Avg: {status_info['avg']:,.0f} lbs"
             fig.add_trace(go.Scatter(
                 x=last_4_trips['delivery_date'],
                 y=last_4_trips['pollock_lbs'],
                 mode='markers',
-                name='Current 4-Trip Window',
-                marker=dict(size=14, color='#ff4444', symbol='circle-open', line=dict(width=3))
+                name='In 4-Trip Window',
+                marker=dict(size=14, color='#ff4444', symbol='circle-open', line=dict(width=3)),
+                hovertemplate='<b>%{x|%b %d, %Y}</b><br>Trip: %{y:,} lbs<br>' + avg_text + '<extra></extra>'
             ))
 
         fig.update_layout(
