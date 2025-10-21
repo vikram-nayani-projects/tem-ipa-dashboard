@@ -1,0 +1,11 @@
+# Railway.toml - Configuration for multi-app deployment
+
+# This tells Railway to look in the tem-ipa folder for this service
+[build]
+builder = "nixpacks"
+buildCommand = "pip install -r tem-ipa/requirements.txt"
+
+[deploy]
+startCommand = "streamlit run tem-ipa/src/app.py --server.port=$PORT --server.address=0.0.0.0"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
