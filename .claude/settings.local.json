@@ -23,7 +23,12 @@
       "Bash(python -m pip install:*)",
       "Bash(py -m pip:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(python:*)",
+      "Bash(py src/demo_data.py)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []
