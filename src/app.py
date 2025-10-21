@@ -139,7 +139,7 @@ with st.sidebar:
 # ============================================================================
 if page == "Fleet Overview":
     st.header("📋 Fleet Overview - All Vessels")
-    st.markdown("Quick status view of all vessels in the 2026 A Season")
+    st.markdown("**Current compliance status** of all vessels in the 2026 A Season (based on latest 4-trip rolling average)")
 
     # Build summary table
     summary_data = []
@@ -150,9 +150,9 @@ if page == "Fleet Overview":
             summary_data.append({
                 'Vessel Name': vessel['vessel_name'],
                 'Vessel ID': vessel['vessel_id'],
-                'Status': 'Need More Data',
-                '4-Trip Avg': f"Need {status_info['trips_needed']} more trips",
-                'Trips': len(status_info['all_trips']),
+                'Current Status': 'Need More Data',
+                'Current 4-Trip Avg': f"Need {status_info['trips_needed']} more trips",
+                'Total Trips': len(status_info['all_trips']),
                 'Sort': 4  # For sorting
             })
         else:
@@ -170,9 +170,9 @@ if page == "Fleet Overview":
             summary_data.append({
                 'Vessel Name': vessel['vessel_name'],
                 'Vessel ID': vessel['vessel_id'],
-                'Status': status_display,
-                '4-Trip Avg': f"{status_info['avg']:,.0f} lbs",
-                'Trips': len(status_info['all_trips']),
+                'Current Status': status_display,
+                'Current 4-Trip Avg': f"{status_info['avg']:,.0f} lbs",
+                'Total Trips': len(status_info['all_trips']),
                 'Sort': sort_order
             })
 
