@@ -350,10 +350,31 @@ elif page == "Vessel Details":
     all_trips = get_vessel_trips(selected_vessel['vessel_id'])
 
     if len(all_trips) > 0:
+        # Calculate rolling 4-trip averages
+        all_trips['rolling_avg'] = all_trips['pollock_lbs'].rolling(window=4, min_periods=4).mean()
+
+        # Create custom hover text with rolling averages
+        hover_text = []
+        for idx, row in all_trips.iterrows():
+            if pd.isna(row['rolling_avg']):
+                # First 3 trips don't have a 4-trip average yet
+                hover_text.append(
+                    f"<b>{pd.to_datetime(row['delivery_date']).strftime('%b %d, %Y')}</b><br>"
+                    f"Trip: {row['pollock_lbs']:,.0f} lbs<br>"
+                    f"<i>Need {4 - (idx + 1)} more trips for 4-trip avg</i>"
+                )
+            else:
+                # Show rolling average for trip 4 onwards
+                hover_text.append(
+                    f"<b>{pd.to_datetime(row['delivery_date']).strftime('%b %d, %Y')}</b><br>"
+                    f"Trip: {row['pollock_lbs']:,.0f} lbs<br>"
+                    f"4-Trip Avg: {row['rolling_avg']:,.0f} lbs"
+                )
+
         # Create chart
         fig = go.Figure()
 
-        # Add trip points
+        # Add trip points with rolling average in tooltip
         fig.add_trace(go.Scatter(
             x=all_trips['delivery_date'],
             y=all_trips['pollock_lbs'],
@@ -361,7 +382,8 @@ elif page == "Vessel Details":
             name='Pollock Catch',
             line=dict(color='#1f77b4', width=3),
             marker=dict(size=10),
-            hovertemplate='<b>%{x|%b %d, %Y}</b><br>Pollock: %{y:,} lbs<extra></extra>'
+            hovertemplate='%{text}<extra></extra>',
+            text=hover_text
         ))
 
         # Add 4-trip average limit line (without annotation)
@@ -401,18 +423,16 @@ elif page == "Vessel Details":
             hoverinfo='skip'
         ))
 
-        # Highlight current 4-trip window
+        # Highlight current 4-trip window with red circles
         if status_info['status'] != 'INSUFFICIENT_DATA':
             last_4_trips = pd.DataFrame(status_info['trips'])
-            # Add custom hover text with 4-trip average
-            avg_text = f"4-Trip Avg: {status_info['avg']:,.0f} lbs"
             fig.add_trace(go.Scatter(
                 x=last_4_trips['delivery_date'],
                 y=last_4_trips['pollock_lbs'],
                 mode='markers',
-                name='In 4-Trip Window',
+                name=f'Current Window (Avg: {status_info["avg"]:,.0f} lbs)',
                 marker=dict(size=14, color='#ff4444', symbol='circle-open', line=dict(width=3)),
-                hovertemplate='<b>%{x|%b %d, %Y}</b><br>Trip: %{y:,} lbs<br>' + avg_text + '<extra></extra>'
+                hoverinfo='skip'  # Skip hover since main line already shows the data
             ))
 
         fig.update_layout(
@@ -422,7 +442,7 @@ elif page == "Vessel Details":
             },
             xaxis_title="Delivery Date",
             yaxis_title="Pollock (lbs)",
-            hovermode='x unified',
+            hovermode='closest',
             height=650,
             legend=dict(
                 orientation="h",
