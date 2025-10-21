@@ -359,27 +359,44 @@ elif page == "Vessel Details":
             y=all_trips['pollock_lbs'],
             mode='lines+markers',
             name='Pollock Catch',
-            line=dict(color='#1f77b4', width=2),
-            marker=dict(size=8)
+            line=dict(color='#1f77b4', width=3),
+            marker=dict(size=10)
         ))
 
-        # Add 4-trip average limit line
+        # Add 4-trip average limit line (without annotation)
         fig.add_hline(
             y=300000,
             line_dash="dash",
             line_color="orange",
-            annotation_text="4-Trip Avg Limit (300k lbs)",
-            annotation_position="right"
+            line_width=2,
+            annotation_text="",
         )
 
-        # Add egregious limit line
+        # Add egregious limit line (without annotation)
         fig.add_hline(
             y=335000,
             line_dash="dash",
             line_color="red",
-            annotation_text="Egregious Limit (335k lbs)",
-            annotation_position="right"
+            line_width=2,
+            annotation_text="",
         )
+
+        # Add invisible traces for legend entries
+        fig.add_trace(go.Scatter(
+            x=[None], y=[None],
+            mode='lines',
+            name='4-Trip Limit (300k)',
+            line=dict(color='orange', width=2, dash='dash'),
+            showlegend=True
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=[None], y=[None],
+            mode='lines',
+            name='Egregious (335k)',
+            line=dict(color='red', width=2, dash='dash'),
+            showlegend=True
+        ))
 
         # Highlight current 4-trip window
         if status_info['status'] != 'INSUFFICIENT_DATA':
@@ -389,16 +406,32 @@ elif page == "Vessel Details":
                 y=last_4_trips['pollock_lbs'],
                 mode='markers',
                 name='Current 4-Trip Window',
-                marker=dict(size=12, color='red', symbol='circle-open', line=dict(width=2))
+                marker=dict(size=14, color='#ff4444', symbol='circle-open', line=dict(width=3))
             ))
 
         fig.update_layout(
-            title=f"{selected_vessel_name} - Pollock Catch per Trip",
+            title={
+                'text': f"{selected_vessel_name} - Pollock Catch per Trip",
+                'font': {'size': 20}
+            },
             xaxis_title="Delivery Date",
             yaxis_title="Pollock (lbs)",
             hovermode='x unified',
-            height=500
+            height=650,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.25,
+                xanchor="center",
+                x=0.5,
+                font=dict(size=12)
+            ),
+            margin=dict(l=80, r=40, t=80, b=100),
+            font=dict(size=13)
         )
+
+        # Format y-axis with commas
+        fig.update_yaxes(tickformat=',')
 
         st.plotly_chart(fig, use_container_width=True)
 
