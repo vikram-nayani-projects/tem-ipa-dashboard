@@ -18,6 +18,65 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ============================================================================
+# AUTHENTICATION
+# ============================================================================
+# Demo credentials for interview committee
+# In production, this would use database with proper password hashing
+
+# Initialize session state
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+    st.session_state.user_name = None
+    st.session_state.username = None
+
+# Demo user credentials
+DEMO_USERS = {
+    'demo': {'password': 'demo123', 'name': 'Demo User'},
+    'ipa_manager': {'password': 'demo2026', 'name': 'IPA Manager'},
+    'fishermen_first': {'password': 'ff2026', 'name': 'Fishermen First'}
+}
+
+# Login function
+def login(username, password):
+    if username in DEMO_USERS and DEMO_USERS[username]['password'] == password:
+        st.session_state.authenticated = True
+        st.session_state.user_name = DEMO_USERS[username]['name']
+        st.session_state.username = username
+        return True
+    return False
+
+# Logout function
+def logout():
+    st.session_state.authenticated = False
+    st.session_state.user_name = None
+    st.session_state.username = None
+
+# Show login page if not authenticated
+if not st.session_state.authenticated:
+    st.title("🐟 CGOA Rockfish Analytics Dashboard")
+    st.markdown("**2026 Rockfish Program Manager**")
+    st.markdown("---")
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col2:
+        st.subheader("🔐 Login")
+
+        with st.form("login_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            submit = st.form_submit_button("Login", type="primary", use_container_width=True)
+
+            if submit:
+                if login(username, password):
+                    st.success("Login successful!")
+                    st.rerun()
+                else:
+                    st.error("Invalid username or password")
+
+    st.stop()
+
 # Custom CSS
 st.markdown("""
     <style>
@@ -96,6 +155,12 @@ def get_data():
 data = get_data()
 
 # Sidebar navigation
+st.sidebar.markdown(f"### Welcome, {st.session_state.user_name}!")
+if st.sidebar.button("🚪 Logout", use_container_width=True):
+    logout()
+    st.rerun()
+
+st.sidebar.markdown("---")
 st.sidebar.markdown("### 🐟 CGOA Rockfish Analytics")
 st.sidebar.markdown("*Demo Platform*")
 st.sidebar.markdown("---")
@@ -111,6 +176,15 @@ st.sidebar.markdown("**2026 Rockfish Program Overview**")
 st.sidebar.markdown("**Season:** April 1 - November 15")
 st.sidebar.markdown("**Cooperatives:** 4")
 st.sidebar.markdown("**Active Vessels:** 22")
+
+# Demo banner
+st.markdown("""
+<div style="background-color: #fff4e6; padding: 15px; border-radius: 5px; border-left: 5px solid #ff9800; margin-bottom: 20px;">
+    <strong>⚠️ DEMONSTRATION VERSION</strong><br/>
+    This is a proof-of-concept with test data. Production system will include live eLandings integration,
+    secure authentication, database persistence, and complete quota management features.
+</div>
+""", unsafe_allow_html=True)
 
 # ============================================================================
 # DASHBOARD PAGE
